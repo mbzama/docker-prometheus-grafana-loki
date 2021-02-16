@@ -117,9 +117,8 @@ Note that this dashboard doesn't show the containers that are part of the monito
 
 ***Monitor Services Dashboard***
 
-![Monitor Services](https://raw.githubusercontent.com/Einsteinish/Docker-Compose-Prometheus-and-Grafana/master/screens/Grafana_Prometheus.png)
-![Monitor Services](https://raw.githubusercontent.com/Einsteinish/Docker-Compose-Prometheus-and-Grafana/master/screens/Grafana_Prometheus2.png)
-![Monitor Services](https://raw.githubusercontent.com/Einsteinish/Docker-Compose-Prometheus-and-Grafana/master/screens/Grafana_Prometheus3.png)
+![Monitor Services](screenshots/Grafana-Prometheus1.png)
+![Monitor Services](screenshots/Grafana-Prometheus2.png)
 
 The Monitor Services Dashboard shows key metrics for monitoring the containers that make up the monitoring stack:
 
@@ -132,19 +131,6 @@ The Monitor Services Dashboard shows key metrics for monitoring the containers t
 * Prometheus HTTP requests graph
 * Prometheus alerts graph
 
-## Define alerts
-
-Three alert groups have been setup within the [alert.rules](https://github.com/Einsteinish/Docker-Compose-Prometheus-and-Grafana/blob/master/prometheus/alert.rules) configuration file:
-
-* Monitoring services alerts [targets](https://github.com/Einsteinish/Docker-Compose-Prometheus-and-Grafana/blob/master/prometheus/alert.rules#L2-L11)
-* Docker Host alerts [host](https://github.com/Einsteinish/Docker-Compose-Prometheus-and-Grafana/blob/master/prometheus/alert.rules#L13-L40)
-* Docker Containers alerts [containers](https://github.com/Einsteinish/Docker-Compose-Prometheus-and-Grafana/blob/master/prometheus/alert.rules#L42-L69)
-
-You can modify the alert rules and reload them by making a HTTP POST call to Prometheus:
-
-```
-curl -X POST http://admin:admin@<host-ip>:9090/-/reload
-```
 
 ***Monitoring services alerts***
 
@@ -253,7 +239,7 @@ A complete list of integrations can be found [here](https://prometheus.io/docs/a
 
 You can view and silence notifications by accessing `http://<host-ip>:9093`.
 
-The notification receivers can be configured in [alertmanager/config.yml](https://github.com/Einsteinish/Docker-Compose-Prometheus-and-Grafana/blob/master/alertmanager/config.yml) file.
+The notification receivers can be configured in [alertmanager/config.yml](alertmanager/config.yml) file.
 
 To receive alerts via Slack you need to make a custom integration by choose ***incoming web hooks*** in your Slack team app page.
 You can find more details on setting up Slack integration [here](http://www.robustperception.io/using-slack-with-the-alertmanager/).
@@ -274,7 +260,7 @@ receivers:
             api_url: 'https://hooks.slack.com/services/<webhook-id>'
 ```
 
-![Slack Notifications](https://github.com/mbzama/docker-prometheus-grafana/master/screenshots/Slack-Notification.png)
+![Slack Notifications](screenshots/Slack-Notification.png)
 
 ## Sending metrics to the Pushgateway
 
