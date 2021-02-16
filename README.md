@@ -101,7 +101,7 @@ You can find right value for your system in Prometheus `http://<host-ip>:9090` l
 
 ***Docker Containers Dashboard***
 
-![Containers](Grafana-DockerContainers.png)
+![Containers](screenshots/Grafana-DockerContainers.png)
 
 The Docker Containers Dashboard shows key metrics for monitoring running containers:
 
@@ -117,7 +117,7 @@ Note that this dashboard doesn't show the containers that are part of the monito
 
 ***Monitor Services Dashboard***
 
-![Monitor Services](Grafana-MonitorServices.png)
+![Monitor Services](screenshots/Grafana-MonitorServices.png)
 
 The Monitor Services Dashboard shows key metrics for monitoring the containers that make up the monitoring stack:
 
