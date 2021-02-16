@@ -76,7 +76,7 @@ Grafana is preconfigured with dashboards and Prometheus as the default data sour
 
 ***Docker Host Dashboard***
 
-![Host](https://raw.githubusercontent.com/Einsteinish/Docker-Compose-Prometheus-and-Grafana/master/screens/Grafana_Docker_Host.png)
+![Host](screenshots/Grafana-DockerHost.png)
 
 The Docker Host Dashboard shows key metrics for monitoring the resource usage of your server:
 
@@ -101,7 +101,7 @@ You can find right value for your system in Prometheus `http://<host-ip>:9090` l
 
 ***Docker Containers Dashboard***
 
-![Containers](https://raw.githubusercontent.com/Einsteinish/Docker-Compose-Prometheus-and-Grafana/master/screens/Grafana_Docker_Containers.png)
+![Containers](Grafana-DockerContainers.png)
 
 The Docker Containers Dashboard shows key metrics for monitoring running containers:
 
@@ -117,8 +117,7 @@ Note that this dashboard doesn't show the containers that are part of the monito
 
 ***Monitor Services Dashboard***
 
-![Monitor Services](screenshots/Grafana-Prometheus1.png)
-![Monitor Services](screenshots/Grafana-Prometheus2.png)
+![Monitor Services](Grafana-MonitorServices.png)
 
 The Monitor Services Dashboard shows key metrics for monitoring the containers that make up the monitoring stack:
 
