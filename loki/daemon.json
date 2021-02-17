@@ -1,0 +1,10 @@
+{
+    "debug" : true,
+    "log-driver": "loki",
+    "log-opts": {
+        "loki-url": "http://admin:admin@localhost:3100/api/prom/push",
+        "loki-batch-size": "400",
+        "max-size": "50m",
+        "max-file": "2"
+    }
+}

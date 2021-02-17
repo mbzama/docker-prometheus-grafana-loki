@@ -10,33 +10,56 @@ Prometheus-Grafana-Loki
 - [Loki](https://grafana.com/docs/loki/latest/)
 
    
-----------
+-----------
 ### Setup
-----------
+-----------
 
-### Create .env file in the root folder:
+Create .env file in the root folder:
 ```
 ADMIN_USER=admin  
 ADMIN_PASSWORD=admin
 ```
 
-### Clone this repository
+Clone this repository
 ```
 git clone https://github.com/mbzama/docker-prometheus-grafana.git
 
-To start monitoring tools (Prometheus, Grafana):
-    ./start-monitor.sh
+```
 
-To start exporters/agents in the target machine:
+To start monitoring tools (Prometheus, Grafana, Loki):
+```
+    ./start-prom-grafana-loki.sh
+```
+
+To start monitoring tools (Prometheus, Grafana):
+```
+    ./start-prom-grafana.sh
+```
+
+To stop monitoring tools (Prometheus, Grafana):
+```
+    ./stop-monitor.sh
+```
+
+To start exporters/agents in the target machine/VMs:
+```
     ./start-exporters.sh
 ```
 
+To stop exporters/agents in the target machine/VMs:
+```
+    ./stop-exporters.sh
+```
+-----------
 ## Prerequisites:
+-----------
 
 * Docker Engine >= 1.13
 * Docker Compose >= 1.11
 
+----------
 ## Containers:
+-----------
 
 * Prometheus (metrics database) `http://<host-ip>:9090`
 * Prometheus-Pushgateway (push acceptor for ephemeral and batch jobs) `http://<host-ip>:9091`
@@ -46,7 +69,9 @@ To start exporters/agents in the target machine:
 * cAdvisor (containers metrics collector)
 * Caddy (reverse proxy and basic auth provider for prometheus and alertmanager)
 
+----------
 ## Setup Grafana
+-----------
 
 Navigate to `http://<host-ip>:3000` and login with user ***admin*** password ***admin***. You can change the credentials in the compose file or by supplying the `ADMIN_USER` and `ADMIN_PASSWORD` environment variables via .env file on compose up. The config file can be added directly in grafana part like this
 ```
@@ -130,7 +155,93 @@ The Monitor Services Dashboard shows key metrics for monitoring the containers t
 * Prometheus HTTP requests graph
 * Prometheus alerts graph
 
+--------------
+## Logging using LOKI
+--------------
+***Exporting Logging from target machines***
 
+**From Docker containers:**
+Install docker plugin in target machine
+
+  `docker plugin install  grafana/loki-docker-driver:latest --alias loki --grant-all-permissions`
+
+
+Verify the plugin
+  `docker plugin ls`
+
+
+Copy the configuration file and restart docker daemon
+
+  `sudo cp loki/daemon.json /etc/docker/`
+
+  `sudo service docker restart`
+
+
+***Viewing logs from Grafana***
+
+*Note:*  Metics can be viewed `http://<host-ip>:3100/metrics`
+
+Navigate to `http://<host-ip>:3000`
+
+Login with ***admin*** / ***admin***
+
+Add Loki datasource
+    ![Slack Notifications](screenshots/Loki-setup-grafana.png)
+
+Select the log using container name or label
+![Select Loki source](screenshots/loki-select-log1.png)
+
+![View Logs](screenshots/loki-logs.png)
+
+
+----------
+## Sending metrics to the Pushgateway
+----------
+The [pushgateway](https://github.com/prometheus/pushgateway) is used to collect data from batch jobs or from services.
+
+To push data, simply execute:
+
+    echo "some_metric 3.14" | curl --data-binary @- http://user:password@localhost:9091/metrics/job/some_job
+
+Please replace the `user:password` part with your user and password set in the initial configuration (default: `admin:admin`).
+
+
+--------------
+## Setup alerting
+--------------
+The AlertManager service is responsible for handling alerts sent by Prometheus server.
+AlertManager can send notifications via email, Pushover, Slack, HipChat or any other system that exposes a webhook interface.
+A complete list of integrations can be found [here](https://prometheus.io/docs/alerting/configuration).
+
+You can view and silence notifications by accessing `http://<host-ip>:9093`.
+
+The notification receivers can be configured in [alertmanager/config.yml](alertmanager/config.yml) file.
+
+To receive alerts via Slack you need to make a custom integration by choose ***incoming web hooks*** in your Slack team app page.
+You can find more details on setting up Slack integration [here](http://www.robustperception.io/using-slack-with-the-alertmanager/).
+
+Copy the Slack Webhook URL into the ***api_url*** field and specify a Slack ***channel***.
+
+```yaml
+route:
+    receiver: 'slack'
+
+receivers:
+    - name: 'slack'
+      slack_configs:
+          - send_resolved: true
+            text: "{{ .CommonAnnotations.description }}"
+            username: 'Prometheus'
+            channel: '#<channel>'
+            api_url: 'https://hooks.slack.com/services/<webhook-id>'
+```
+
+![Slack Notifications](screenshots/Slack-Notification.png)
+
+
+----------
+## Alert examples
+----------
 ***Monitoring services alerts***
 
 Trigger an alert if any of the monitoring targets (node-exporter and cAdvisor) are down for more than 30 seconds:
@@ -228,126 +339,4 @@ Trigger an alert if a container is using more than 1.2GB of RAM for more than 30
     annotations:
       summary: "Jenkins high memory usage"
       description: "Jenkins memory consumption is at {{ humanize $value}}."
-```
-
-## Setup alerting
-
-The AlertManager service is responsible for handling alerts sent by Prometheus server.
-AlertManager can send notifications via email, Pushover, Slack, HipChat or any other system that exposes a webhook interface.
-A complete list of integrations can be found [here](https://prometheus.io/docs/alerting/configuration).
-
-You can view and silence notifications by accessing `http://<host-ip>:9093`.
-
-The notification receivers can be configured in [alertmanager/config.yml](alertmanager/config.yml) file.
-
-To receive alerts via Slack you need to make a custom integration by choose ***incoming web hooks*** in your Slack team app page.
-You can find more details on setting up Slack integration [here](http://www.robustperception.io/using-slack-with-the-alertmanager/).
-
-Copy the Slack Webhook URL into the ***api_url*** field and specify a Slack ***channel***.
-
-```yaml
-route:
-    receiver: 'slack'
-
-receivers:
-    - name: 'slack'
-      slack_configs:
-          - send_resolved: true
-            text: "{{ .CommonAnnotations.description }}"
-            username: 'Prometheus'
-            channel: '#<channel>'
-            api_url: 'https://hooks.slack.com/services/<webhook-id>'
-```
-
-![Slack Notifications](screenshots/Slack-Notification.png)
-
-## Sending metrics to the Pushgateway
-
-The [pushgateway](https://github.com/prometheus/pushgateway) is used to collect data from batch jobs or from services.
-
-To push data, simply execute:
-
-    echo "some_metric 3.14" | curl --data-binary @- http://user:password@localhost:9091/metrics/job/some_job
-
-Please replace the `user:password` part with your user and password set in the initial configuration (default: `admin:admin`).
-
-## Updating Grafana to v5.2.2
-
-[In Grafana versions >= 5.1 the id of the grafana user has been changed](http://docs.grafana.org/installation/docker/#migration-from-a-previous-version-of-the-docker-container-to-5-1-or-later). Unfortunately this means that files created prior to 5.1 won’t have the correct permissions for later versions.
-
-| Version |   User  | User ID |
-|:-------:|:-------:|:-------:|
-|  < 5.1  | grafana |   104   |
-|  \>= 5.1 | grafana |   472   |
-
-There are two possible solutions to this problem.
-- Change ownership from 104 to 472
-- Start the upgraded container as user 104
-
-##### Specifying a user in docker-compose.yml
-
-To change ownership of the files run your grafana container as root and modify the permissions.
-
-First perform a `docker-compose down` then modify your docker-compose.yml to include the `user: root` option:
-
-```
-  grafana:
-    image: grafana/grafana:5.2.2
-    container_name: grafana
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./grafana/datasources:/etc/grafana/datasources
-      - ./grafana/dashboards:/etc/grafana/dashboards
-      - ./grafana/setup.sh:/setup.sh
-    entrypoint: /setup.sh
-    user: root
-    environment:
-      - GF_SECURITY_ADMIN_USER=${ADMIN_USER:-admin}
-      - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
-      - GF_USERS_ALLOW_SIGN_UP=false
-    restart: unless-stopped
-    expose:
-      - 3000
-    networks:
-      - monitor-net
-    labels:
-      org.label-schema.group: "monitoring"
-```
-
-Perform a `docker-compose up -d` and then issue the following commands:
-
-```
-docker exec -it --user root grafana bash
-
-# in the container you just started:
-chown -R root:root /etc/grafana && \
-chmod -R a+r /etc/grafana && \
-chown -R grafana:grafana /var/lib/grafana && \
-chown -R grafana:grafana /usr/share/grafana
-```
-
-To run the grafana container as `user: 104` change your `docker-compose.yml` like such:
-
-```
-  grafana:
-    image: grafana/grafana:5.2.2
-    container_name: grafana
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./grafana/datasources:/etc/grafana/datasources
-      - ./grafana/dashboards:/etc/grafana/dashboards
-      - ./grafana/setup.sh:/setup.sh
-    entrypoint: /setup.sh
-    user: "104"
-    environment:
-      - GF_SECURITY_ADMIN_USER=${ADMIN_USER:-admin}
-      - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
-      - GF_USERS_ALLOW_SIGN_UP=false
-    restart: unless-stopped
-    expose:
-      - 3000
-    networks:
-      - monitor-net
-    labels:
-      org.label-schema.group: "monitoring"
 ```
