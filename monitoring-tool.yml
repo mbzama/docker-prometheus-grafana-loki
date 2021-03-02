@@ -48,7 +48,7 @@ services:
       org.label-schema.group: "monitoring"
 
   grafana:
-    image: grafana/grafana:6.7.2
+    image: grafana/grafana
     container_name: grafana
     volumes:
       - grafana_data:/var/lib/grafana
@@ -96,10 +96,12 @@ services:
       org.label-schema.group: "monitoring"
 
   loki:
-    image: grafana/loki:2.0.0
+    image: grafana/loki:2.1.0
     container_name: loki
     ports:
       - "3100:3100"
+    expose:
+      - 3100
     command: -config.file=/etc/loki/local-config.yaml
     networks:
       - monitor-net    

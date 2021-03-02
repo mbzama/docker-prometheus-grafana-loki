@@ -160,7 +160,11 @@ The Monitor Services Dashboard shows key metrics for monitoring the containers t
 --------------
 ***Exporting Logging from target machines***
 
-**From Docker containers:**
+**Shipping from app logs/sys logs**
+
+
+
+**Shipping Docker console/logs**
 Install docker plugin in target machine
 
   `docker plugin install  grafana/loki-docker-driver:latest --alias loki --grant-all-permissions`
